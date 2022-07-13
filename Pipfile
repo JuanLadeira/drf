@@ -7,10 +7,11 @@ name = "pypi"
 django = "*"
 djangorestframework = "*"
 pyyaml = "*"
-requests = "*"
 django-cors-headers = "*"
+pyopenssl = "*"
+requests = "*"
 
 [dev-packages]
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
