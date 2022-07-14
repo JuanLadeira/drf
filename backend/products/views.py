@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from rest_framework import generics
+from rest_framework import  authentication, generics, permissions
 from django.shortcuts import get_object_or_404
 from .models import Product
 from .serializers import ProductSerializer
@@ -10,12 +11,42 @@ from .serializers import ProductSerializer
 class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    authentication_classes = [authentication.SessionAuthentication]
+    permission_classes = [permissions.DjangoModelPermissions]
+
+    def perform_create(self, serializer):
+        title = serializer.validated_data.get('title')
+        content = serializer.validated_data.get('content')
+        if content is None:
+            content = title
+        serializer.save(content=content)
 
 #Mostra os detalhes dos dados que forem solicitados.
 class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
+#Atualiza os dados que forem consultados
+class ProductUpdateAPIView(generics.UpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field= 'pk'
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if not instance.content:
+            instance.content = instance.title
+
+#Deleta os dados que foram solicitados.
+class ProductDestroyAPIView(generics.DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer   
+    lookup_field= 'pk' 
+
+    def perform_destroy(self, instance):
+        return super().perform_destroy(instance)
+
+      
 # METODO QUE SERIA UTILIZADO CASO NÃO FOSSE UTILIZAR generics.views.
 # Eu precisaria codar muito mais do que nas classes acima.
 # This method below would be used if I wouldn't use the generis.views, as you can see below,
