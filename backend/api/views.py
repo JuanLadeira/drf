@@ -1,13 +1,15 @@
-from django.http import JsonResponse
-import json
-from products.models import Product
+from logging import raiseExceptions
+from yaml import serialize
+from products.serializers import ProductSerializer
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
 # Create your views here.
 
+@api_view(['POST'])
 def api_home(request, *args, **kwargs):
-    model_data = Product.objects.all().order.by('?').first()
-    data = {}
-    if model_data:
-        data['title'] = model_data.title
-        data['content'] = model_data.content
-        data['price'] = model_data.price
-    return JsonResponse({"message": "Hi there, this is your django API response"})
+    'DRF API VIEW'
+    serializer =  ProductSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
+        print(serializer.data)
+        return Response(serializer.data)
+    return Response({"invalid": "Not good data, try again"},status=400)
